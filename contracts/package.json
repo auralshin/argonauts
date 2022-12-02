@@ -8,7 +8,7 @@
     "test": "npx hardhat test",
     "clean": "rm -rf ./artifacts ./cache ./typechain "
   },
-  "author": "amanusk",
+  "author": "argonauts",
   "license": "MIT",
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
