@@ -1,24 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import Header from './components/header/Header';
+import ABI from './constants/POR.json';
 import './App.css';
+import { useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
+import { ethers } from 'ethers';
+import Tabs from './components/tabs/Tabs';
 
 function App() {
+
+  // initilise contract call is nonce use
+
+
+  const getRange = () => {
+    const range = ethers.BigNumber.from(ethers.utils.randomBytes(32))
+    return range;
+  }
+
+  const blockNumber = useContractRead({
+    address: '',
+    abi: ABI,
+    functionName: 'epochRange',
+    args: [1],
+  })
+
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="h-[300vh]">
+      <Header />
+     {/* Tabs */}
+     <Tabs/>
     </div>
   );
 }

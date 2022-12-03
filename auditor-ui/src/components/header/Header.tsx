@@ -1,20 +1,53 @@
-import React from 'react'
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-
+import React from "react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useContractRead } from "wagmi";
+import ABI from "../../constants/POR.json";
+import { CONTRACT_ADDRESS } from "../../constants/config";
+import { useGlobalContext } from "../../context";
+import { BigNumber } from "ethers";
 function Header() {
+  const { setEpoch } = useGlobalContext();
+  // current Epoch and current Stage
+  const currentEpoch = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    functionName: "currentEpoch",
+    onSuccess(data: BigNumber) {
+      setEpoch(data.toString());
+    },
+  });
+
+  const currentStage = useContractRead({
+    address: CONTRACT_ADDRESS,
+    abi: ABI,
+    functionName: "getState",
+    args: [currentEpoch.data],
+  });
+
   return (
-    <div className='bg-black flex justify-between items-center p-5 rounded-3xl mt-2 mx-2 '>
-                <div className='text-white text-lg font-normal'>
-                  Proof of Trust
-                </div>
-                <div>
-
-                <ConnectButton />
-                </div>
-
-
+    <div className="bg-black flex justify-between items-center p-5 rounded-3xl mt-2 mx-2 ">
+      <div className="text-white text-lg font-normal">
+        Proof of Trust | Auditor
+      </div>
+      <div className="flex justify-center items-center gap-x-4  rounded-lg ">
+        <div className="rounded-2xl p-2">
+          {currentEpoch.isSuccess ? (
+            <div className="flex items-center gap-x-4">
+              <div className="text-black bg-white p-2 rounded-2xl shadow-inner shadow-slate-800 font-normal">
+                <p>
+                  <> Current Epoch: {currentEpoch.data?.toString()} </>
+                </p>
+              </div>
+              <div className="bg-white text-black p-2 rounded-2xl shadow-inner shadow-slate-800 font-normal">
+                <> Current Stage: {currentStage.data?.toString()} </>
+              </div>
+            </div>
+          ) : null}
+        </div>
+        <ConnectButton />
+      </div>
     </div>
-  )
+  );
 }
 
-export default Header
+export default Header;
