@@ -1,6 +1,6 @@
-function UserBalanceTable() {
-  const tableBorderClass = "border-2 border-stone-900 p-1 px-2";
+import { tableBorderClass } from "../configs/config";
 
+function UserBalanceTable() {
   const userBalances = [
     { assetName: "BTC", totalBalance: "0.012" },
     { assetName: "ETH", totalBalance: "1.517" },

@@ -1,7 +1,7 @@
 import React from "react";
-// import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Link } from "react-router-dom";
-import { routes } from "../configs/config";
+import { clientTypes, routes } from "../configs/config";
 
 function Header({ clientType }: { clientType: string }) {
   return (
@@ -10,7 +10,7 @@ function Header({ clientType }: { clientType: string }) {
         Proof of Trust | {clientType}
       </Link>
       <div>
-        {/* <ConnectButton /> */}
+        {clientType === clientTypes.exchangeAdmin ? <ConnectButton /> : null}
       </div>
     </div>
   );

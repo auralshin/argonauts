@@ -12,7 +12,7 @@ import { publicProvider } from "wagmi/providers/public";
 import { infuraApiKey } from "./configs/config";
 
 const { chains, provider } = configureChains(
-  [chain.mainnet, chain.hardhat, chain.goerli],
+  [chain.goerli, chain.hardhat],
   [infuraProvider({ apiKey: infuraApiKey }), publicProvider()]
 );
 

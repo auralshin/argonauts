@@ -9,10 +9,13 @@ function Main() {
     <div className="h-[100vh] flex justify-center items-center">
       <div className="flex gap-[10rem]">
         <Button handleClick={() => navigate(routes.exchangeAdmin)}>
-          Exchange admin client
+          Exchange: admin login
         </Button>
         <Button handleClick={() => navigate(routes.exchangeUser)}>
-          Exchange user client
+          Exchange: user login
+        </Button>
+        <Button handleClick={() => navigate(routes.progressTracker)}>
+          Progress tracker
         </Button>
       </div>
     </div>
