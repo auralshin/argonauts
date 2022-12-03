@@ -1,12 +1,18 @@
 import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ExchangeAdmin from "./pages/ExchangeAdmin";
+import ExchangeUser from "./pages/ExchangeUser";
+import Main from "./pages/Main";
 
 function App() {
   return (
-    <div className="text-center">
-      <h1 className="text-3xl font-bold underline">
-        Centralized Exchange Client
-      </h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route path="/exchange-user" element={<ExchangeUser />} />
+        <Route path="/exchange-admin" element={<ExchangeAdmin />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
