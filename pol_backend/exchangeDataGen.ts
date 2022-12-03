@@ -10,7 +10,10 @@ function exchangeDataGen() {
 	const userDataWithUnHashedSalt = [];
 	for (let i = 0; i < userData.length; i++) {
 		const saltToUser = crypto.randomBytes(4).toString("hex");
-		const saltInDB = Web3.utils.soliditySha3(saltToUser);
+		const saltInDB = Web3.utils.soliditySha3({
+			type: "string",
+			value: saltToUser,
+		});
 		userDataWithSalt.push({
 			uuid: userData[i].uuid,
 			balance: userData[i].balance,
