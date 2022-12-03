@@ -73,7 +73,7 @@ contract ProofOfLiability is AccessControl {
 
         merkleTreeCid = _merkleTreeCid;
         isContractInitialized = true;
-    }
+    } /*  */
 
     function loadSaltMaps(UserSalts[] memory userSalts)
         public
