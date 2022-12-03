@@ -16,15 +16,9 @@ import { useGlobalContext } from "../../context";
 import { BigNumber, ethers } from "ethers";
 import useEpoch from "../../hooks/useEpoch";
 function Tab2() {
-  const [challenges, setChallenges] = React.useState<string[]>([
-    "1234567898765432345678987654323456789",
-    "0987654323456789876543456745676567",
-  ]);
+  const [challenges, setChallenges] = React.useState<string[]>([]);
   const [sigs, setSigs] = React.useState<string[]>([]);
-  const [auditors, setAuditors] = React.useState<string[]>([
-    "1234567898765432345678987654323456789",
-    "0987654323456789876543456745676567",
-  ]);
+  const [auditors, setAuditors] = React.useState<string[]>([]);
 
   const { address } = useAccount();
 
@@ -69,7 +63,16 @@ function Tab2() {
   React.useEffect(() => {
     (async () => {
       const arr = await getAuditorsChallenges();
+      console.log("get aud challenges", arr);
       setChallenges(arr);
+    })();
+  }, []);
+
+  React.useEffect(() => {
+    (async () => {
+      const arr = await contract.getAuditors();
+      console.log("get auds", arr);
+      setAuditors(arr);
     })();
   }, []);
 
@@ -123,122 +126,69 @@ function Tab2() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                          <div className="flex">
-                            <div className="ml-3">
-                              <p className="text-gray-600 truncate whitespace-no-wrap">
-                                {auditors[0]
-                                  .toString()
+                      {auditors.map((aud, index) => (
+                        <tr>
+                          <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <div className="flex">
+                              <div className="ml-3">
+                                <p className="text-gray-600 truncate whitespace-no-wrap">
+                                  {aud
+                                    ?.toString()
+                                    .split("")
+                                    .slice(0, 10)
+                                    .join("") + "..." ||
+                                    "0x0000000000000000000000000000000000000000"
+                                      .split("")
+                                      .slice(0, 10)
+                                      .join("") + "..."}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <p className="text-gray-900 whitespace-no-wrap">
+                              {challenges[index]
+                                ?.toString()
+                                .split("")
+                                .slice(0, 10)
+                                .join("") + "..." ||
+                                "0x0000000000000000000000000000000000000000"
                                   .split("")
                                   .slice(0, 10)
-                                  .join("") + "..." ||
-                                  "0x0000000000000000000000000000000000000000"
-                                    .split("")
-                                    .slice(0, 10)
-                                    .join("") + "..."}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                          <p className="text-gray-900 whitespace-no-wrap">
-                            {challenges[0]
-                              .toString()
-                              .split("")
-                              .slice(0, 10)
-                              .join("") + "..." ||
-                              "0x0000000000000000000000000000000000000000"
-                                .split("")
-                                .slice(0, 10)
-                                .join("") + "..."}
-                          </p>
-                        </td>
-                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                          {sigs[0] ? (
-                            <p className="truncate w-[10vw]">{sigs[0]}</p>
-                          ) : (
+                                  .join("") + "..."}
+                            </p>
+                          </td>
+                          <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            {sigs[index] ? (
+                              <p className="truncate w-[10vw]">{sigs[index]}</p>
+                            ) : (
+                              <button
+                                onClick={() => signMessage(index)}
+                                className="bg-green-500 hover:bg-green-700 text-white font-bold w-[10vw] py-2 px-4 rounded-full"
+                              >
+                                Sign
+                              </button>
+                            )}
+                          </td>
+
+                          <td className="px-5 py-5 border-b w-[10vw] border-gray-200 bg-white text-sm text-right">
+                            {/* OnClick open a side tab with refresh option */}
+
                             <button
-                              onClick={() => signMessage(0)}
-                              className="bg-green-500 hover:bg-green-700 text-white font-bold w-[10vw] py-2 px-4 rounded-full"
+                              onClick={() => {}}
+                              type="button"
+                              className="inline-block rounded-lg text-gray-500 hover:text-gray-700"
                             >
-                              Sign
+                              <svg
+                                className="inline-block h-6 w-6 fill-current"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M12 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm-2 6a2 2 0 104 0 2 2 0 00-4 0z" />
+                              </svg>
                             </button>
-                          )}
-                        </td>
-
-                        <td className="px-5 py-5 border-b w-[10vw] border-gray-200 bg-white text-sm text-right">
-                          {/* OnClick open a side tab with refresh option */}
-
-                          <button
-                            onClick={() => {}}
-                            type="button"
-                            className="inline-block rounded-lg text-gray-500 hover:text-gray-700"
-                          >
-                            <svg
-                              className="inline-block h-6 w-6 fill-current"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M12 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm-2 6a2 2 0 104 0 2 2 0 00-4 0z" />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                          <div className="flex">
-                            <div className="ml-3">
-                              <p className="text-gray-600 truncate whitespace-no-wrap">
-                                {auditors[1].split("").slice(0, 10).join("") +
-                                  "..." ||
-                                  "0x0000000000000000000000000000000000000000"
-                                    .split("")
-                                    .slice(0, 10)
-                                    .join("") + "..."}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                          <p className="text-gray-900 whitespace-no-wrap">
-                            {challenges[1].split("").slice(0, 10).join("") +
-                              "..." ||
-                              "0x0000000000000000000000000000000000000000"
-                                .split("")
-                                .slice(0, 10)
-                                .join("") + "..."}
-                          </p>
-                        </td>
-                        <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                          {sigs[1] ? (
-                            <p className="truncate w-[10vw]">{sigs[1]}</p>
-                          ) : (
-                            <button
-                              onClick={() => signMessage(1)}
-                              className="bg-green-500 hover:bg-green-700 text-white font-bold w-[10vw] py-2 px-4 rounded-full"
-                            >
-                              Sign
-                            </button>
-                          )}
-                        </td>
-
-                        <td className="px-5 py-5 border-b w-[10vw] border-gray-200 bg-white text-sm text-right">
-                          {/* OnClick open a side tab with refresh option */}
-
-                          <button
-                            onClick={() => {}}
-                            type="button"
-                            className="inline-block rounded-lg text-gray-500 hover:text-gray-700"
-                          >
-                            <svg
-                              className="inline-block h-6 w-6 fill-current"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M12 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm-2 6a2 2 0 104 0 2 2 0 00-4 0z" />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
 
                     <tfoot>
@@ -253,14 +203,14 @@ function Tab2() {
                           <p className="text-gray-900 font-semibold whitespace-no-wrap"></p>
                         </td>
                         <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                          <p className="text-gray-900 whitespace-no-wrap">
+                          {sigs.length == auditors.length ? <p className="text-gray-900 whitespace-no-wrap">
                             <button
                               onClick={() => submitSigs()}
                               className={`bg-green-500 truncate hover:bg-green-700 text-white font-bold w-[10vw] py-2 px-4 rounded-full}`}
                             >
                               Submit Signature
                             </button>
-                          </p>
+                          </p> : null}
                         </td>
                       </tr>
                     </tfoot>
