@@ -137,6 +137,14 @@ contract ProofofReserve {
         stateCount[currentEpoch]++;
     }
 
+    function hasAuditorSubmittedBalance(address _auditor, uint256 _epoch)
+        external
+        view
+        returns (bool)
+    {
+        return totalBalances[_epoch][_auditor] != 0;
+    }
+
     function getTotalSubmittedBalances(uint256 _epoch)
         external
         view
