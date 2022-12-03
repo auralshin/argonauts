@@ -5,6 +5,8 @@ import './App.css';
 import { useContractRead, useContractWrite, usePrepareContractWrite } from 'wagmi';
 import { ethers } from 'ethers';
 import Tabs from './components/tabs/Tabs';
+import ColdWallets from './ColdWallets';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
 
@@ -16,21 +18,24 @@ function App() {
     return range;
   }
 
-  const blockNumber = useContractRead({
-    address: '',
-    abi: ABI,
-    functionName: 'epochRange',
-    args: [1],
-  })
-
+  const Main = () => {
+    return (
+      <div className="h-[100vh]">
+      <Header />
+     <Tabs/>
+    </div>
+    )
+  }
 
 
   return (
-    <div className="h-[300vh]">
-      <Header />
-     {/* Tabs */}
-     <Tabs/>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route path="/coldWallets" element={<ColdWallets />} />
+      </Routes>
+    </BrowserRouter>
+    
   );
 }
 

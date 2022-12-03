@@ -12,6 +12,7 @@ import ABI from "../../constants/POR.json";
 import usdcABI from "../../constants/USDC.json";
 import { useGlobalContext } from "../../context";
 import { ethers } from "ethers";
+import useEpoch from "../../hooks/useEpoch";
 function Tab2() {
   const [cwaArray, setCwaArray] = React.useState<string[]>([]);
   const [sigs, setSigs] = React.useState<string[]>([]);
@@ -26,7 +27,8 @@ function Tab2() {
     React.useState<boolean>(true);
   const { address } = useAccount();
 
-  const { epoch } = useGlobalContext();
+
+  const { currentEpoch } = useEpoch();
 
   const provider = useProvider();
   const contract = useContract({
@@ -39,11 +41,12 @@ function Tab2() {
     if (!address) return;
     const [cwaArrayRes, sigsRes] = await Promise.all([
       contract.getCWAs(),
-      contract.getSignauresForAuditor(epoch, address),
+      contract.getSignauresForAuditor(currentEpoch.data as any, address),
     ]);
 
     setCwaArray(cwaArrayRes);
     setSigs(sigsRes);
+    console.log(cwaArrayRes)
   };
   async function getBalancesAtCheckpoint(
     blockNumber: string,
@@ -63,7 +66,7 @@ function Tab2() {
   const hasSubmitted = async () => {
     if (!address) return;
 
-    const submitted = await contract.hasAuditorSubmittedBalance(address, epoch);
+    const submitted = await contract.hasAuditorSubmittedBalance(address, currentEpoch.data as any);
     console.log(submitted, "submitted");
     setBalanceDisabled(submitted);
   };
@@ -80,7 +83,7 @@ function Tab2() {
     write?.();
   };
   const usdcContract = new ethers.Contract(
-    "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "0x4E499be57DAAB760275a8931DDF5473c867D8AB0",
     usdcABI,
     provider
   ) as USDC;
@@ -97,7 +100,7 @@ function Tab2() {
       console.log("cwa-res", res);
       console.log(res);
       balancesArray.push(res.toString());
-
+        console.log(balancesArray)
       total += Number(res.toString());
     }
     setTotalBalance(total);
@@ -109,7 +112,7 @@ function Tab2() {
     who: string,
     index: number
   ) => {
-    const challenges = await contract.getAuditorsChallenge(epoch);
+    const challenges = await contract.getAuditorsChallenge(currentEpoch.data as any);
     const challenge = challenges[index];
     console.log("challenge", challenge);
     const isValid =
@@ -140,13 +143,15 @@ function Tab2() {
   };
 
   React.useEffect(() => {
-    if (address && epoch && cwaArray.length === 0) {
+    console.log(address, currentEpoch.data as any)
+    if (address && currentEpoch.data && cwaArray.length === 0) {
       fetchSigsAndCWA();
+      console.log(address, currentEpoch.data)
     }
   }, [cwaArray]);
 
   React.useEffect(() => {
-    if (address && epoch && cwaArray.length > 0) {
+    if (address && currentEpoch.data && cwaArray.length > 0) {
       fetchAllBalances();
       hasSubmitted();
     }

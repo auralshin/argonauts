@@ -24,8 +24,8 @@ function Header() {
 
   return (
     <div className="bg-black flex justify-between items-center p-5 rounded-3xl mt-2 mx-2 ">
-      <div className="font-bold text-lg text-green-500">
-        Proof of Trust | Auditor
+      <div className="font-bold text-lg text-blue-500">
+        Proof of Trust | Exchange
       </div>
       <div className="flex justify-center items-center gap-x-4  rounded-lg ">
         <div className="rounded-2xl p-2">
