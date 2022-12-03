@@ -82,9 +82,8 @@ contract ProofofReserve {
     // epoch => cwa => signature[]
     mapping(uint256 => mapping(address => bytes[])) public cwaSignatures;
 
-    // epoch => auditor => cwa => vote
-    mapping(uint256 => mapping(address => mapping(address => bool)))
-        public votes;
+    // epoch => auditor => totalBalance
+    mapping(uint256 => mapping(address => uint256)) public totalBalances;
 
     modifier onlyAuditor() {
         if (!auditors[msg.sender]) revert InvalidAuditor();
@@ -129,15 +128,25 @@ contract ProofofReserve {
         stateCount[currentEpoch]++;
     }
 
-    function verify(bool[] calldata _votes) external onlyAuditor {
-        uint256 len = numberOfAuditorsAndCWAs;
-        if (_votes.length != len) revert ArrayLengthMismatch();
-        for (uint256 i; i < len; ) {
-            // votes[currentEpoch][]
+    function submitTotalBalance(uint256 totalBalance) external onlyAuditor {
+        // ! restrict state
+        // epoch => auditor => totalBalance
 
-            unchecked {
-                ++i;
-            }
+        totalBalances[currentEpoch][msg.sender] = totalBalance;
+
+        stateCount[currentEpoch]++;
+    }
+
+    function getTotalSubmittedBalances(uint256 _epoch)
+        external
+        view
+        returns (uint256[] memory _balances)
+    {
+        uint256 len = numberOfAuditorsAndCWAs;
+        _balances = new uint256[](len);
+
+        for (uint256 i; i < len; ) {
+            _balances[i] = totalBalances[_epoch][auditorsArray[i]];
         }
     }
 
