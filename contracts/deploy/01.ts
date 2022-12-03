@@ -20,6 +20,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     accounts = await hre.ethers.getSigners();
     const addresses = await Promise.all(accounts.map((s) => s.getAddress()));
 
+    console.log("before", (await ethers.provider.getBlock("latest")).number);
+    await mineNBlocks(100);
+    console.log("after", (await ethers.provider.getBlock("latest")).number);
+
     console.log(await accounts[0].getAddress());
 
     const protocolFactory = (await hre.ethers.getContractFactory(
@@ -35,6 +39,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const cwas = addresses.slice(4, 6);
 
     usdcInstance = await tokenFactory.deploy();
+    await usdcInstance.deployed();
+
+    await Promise.all(
+        [...cwas].map((who) =>
+            usdcInstance.faucet(who, ethers.utils.parseEther("10"))
+        )
+    );
+
+    await mineNBlocks(30);
 
     contractInstance = await protocolFactory.deploy(
         usdcInstance.address,
@@ -48,7 +61,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log(auditors, cwas);
 
     await contractInstance.deployed();
-    await usdcInstance.deployed();
     console.log(
         `ProofOfReserve: ${contractInstance.address}\nUSDCInstance:${usdcInstance.address}`
     );
@@ -64,7 +76,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
     await Promise.all(
         [...cwas].map((who) =>
-            usdcInstance.faucet(who, ethers.utils.parseEther("10"))
+            usdcInstance.faucet(
+                who,
+                ethers.utils.parseEther(
+                    Math.floor(Math.random() * 7879).toString()
+                )
+            )
         )
     );
 
@@ -82,6 +99,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
 
     const currentEpoch = await contractInstance.currentEpoch();
+    console.log("currentEpoch", currentEpoch.toString());
     // fill signatures
     for (const cwa of cwas) {
         const challengesForCWA = await contractInstance.getAuditorsChallenge(
@@ -100,10 +118,60 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             .submitSignature(signed);
     }
 
-    // for (const auditor of auditors) {
+    for (const auditor of auditors) {
+        const sigs = await contractInstance.getSignauresForAuditor(
+            currentEpoch,
+            auditor
+        );
+        console.log({ sigs });
 
-    // }
+        const challenge = await contractInstance.getAuditorChallenge(
+            auditor,
+            currentEpoch
+        );
+        // verify sigs
+
+        let totalBalance = ethers.BigNumber.from(0);
+        for (const sig of sigs) {
+            const signerAddress = ethers.utils.verifyMessage(
+                "i own this acc" + challenge.toString(),
+                sig
+            );
+            const sigVerified = signerAddress === cwas[sigs.indexOf(sig)];
+            console.log("sig verified?", sigVerified);
+            const currentBalance = await usdcInstance.balanceOf(
+                cwas[sigs.indexOf(sig)],
+                {
+                    blockTag: currentEpoch.toNumber(),
+                }
+            );
+            console.log("currentBalance", currentBalance.toString());
+            totalBalance = totalBalance.add(currentBalance);
+        }
+        console.log(auditor, "totalBalance", totalBalance.toString());
+        await contractInstance
+            .connect(ethers.provider.getSigner(auditor))
+            .submitTotalBalance(totalBalance);
+    }
 };
+
+async function mineNBlocks(n: number) {
+    for (let index = 0; index < n; index++) {
+        await ethers.provider.send("evm_mine", []);
+    }
+}
+
+function getBalancesAtCheckpoint(
+    blockNumber: string,
+    addresses: string[],
+    usdcInstance: USDC
+) {
+    return Promise.all(
+        addresses.map((address) =>
+            usdcInstance.balanceOf(address, { blockTag: blockNumber })
+        )
+    );
+}
 export default func;
 func.id = "nft_token_deploy";
 func.tags = ["local"];
