@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import "./ProofofReserve.sol";
+import "./ProofOfReserve.sol";
 
 contract ProofofTrust {
     ProofofReserve public immutable POR_DEPLOYMENT;

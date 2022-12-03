@@ -50,6 +50,7 @@ export interface ProofofReserveInterface extends utils.Interface {
     "submitSignature(bytes[])": FunctionFragment;
     "submitTotalBalance(uint256)": FunctionFragment;
     "totalBalances(uint256,address)": FunctionFragment;
+    "totalReserve(uint256)": FunctionFragment;
     "updateEpoch()": FunctionFragment;
   };
 
@@ -80,6 +81,7 @@ export interface ProofofReserveInterface extends utils.Interface {
       | "submitSignature"
       | "submitTotalBalance"
       | "totalBalances"
+      | "totalReserve"
       | "updateEpoch"
   ): FunctionFragment;
 
@@ -185,6 +187,10 @@ export interface ProofofReserveInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "totalReserve",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateEpoch",
     values?: undefined
   ): string;
@@ -266,6 +272,10 @@ export interface ProofofReserveInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "totalBalances",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalReserve",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -421,6 +431,11 @@ export interface ProofofReserve extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    totalReserve(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     updateEpoch(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -544,6 +559,11 @@ export interface ProofofReserve extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  totalReserve(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   updateEpoch(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -664,6 +684,11 @@ export interface ProofofReserve extends BaseContract {
     totalBalances(
       arg0: PromiseOrValue<BigNumberish>,
       arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalReserve(
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -791,6 +816,11 @@ export interface ProofofReserve extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    totalReserve(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     updateEpoch(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
@@ -914,6 +944,11 @@ export interface ProofofReserve extends BaseContract {
     totalBalances(
       arg0: PromiseOrValue<BigNumberish>,
       arg1: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalReserve(
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

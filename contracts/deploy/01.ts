@@ -20,11 +20,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     accounts = await hre.ethers.getSigners();
     const addresses = await Promise.all(accounts.map((s) => s.getAddress()));
 
-    console.log("before", (await ethers.provider.getBlock("latest")).number);
+    // console.log("before", (await ethers.provider.getBlock("latest")).number);
     await mineNBlocks(100);
-    console.log("after", (await ethers.provider.getBlock("latest")).number);
+    // console.log("after", (await ethers.provider.getBlock("latest")).number);
 
-    console.log(await accounts[0].getAddress());
+    // console.log(await accounts[0].getAddress());
 
     const protocolFactory = (await hre.ethers.getContractFactory(
         "ProofofReserve",
@@ -37,6 +37,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const auditors = addresses.slice(2, 4);
     const cwas = addresses.slice(4, 6);
+
+    console.log({accounts: accounts.slice(0,6)})
+
+    // console.log({auditors, cwas})
 
     usdcInstance = await tokenFactory.deploy();
     await usdcInstance.deployed();
@@ -66,6 +70,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     );
 
     // @dev testing env: funding auditor and cwas
+    /*
     await Promise.all(
         [...auditors, ...cwas].map((to) =>
             accounts[0].sendTransaction({
@@ -153,6 +158,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             .connect(ethers.provider.getSigner(auditor))
             .submitTotalBalance(totalBalance);
     }
+    */
 };
 
 async function mineNBlocks(n: number) {

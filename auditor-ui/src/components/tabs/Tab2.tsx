@@ -37,6 +37,7 @@ function Tab2() {
     signerOrProvider: provider,
   }) as ProofofReserve;
 
+  (window as any).contract = contract
   const fetchSigsAndCWA = async () => {
     if (!address) return;
     const [cwaArrayRes, sigsRes] = await Promise.all([
@@ -391,12 +392,12 @@ function Tab2() {
                           </td>
                           <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             <p className="text-gray-900 font-semibold whitespace-no-wrap">
-                              Total
+                            Total Reserves of Exchange
                             </p>
                           </td>
                           <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             <p className="text-gray-900 font-semibold whitespace-no-wrap">
-                              {"Balance: $" + totalBalance}
+                              {"$" + totalBalance}
                             </p>
                           </td>
                           <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -410,7 +411,7 @@ function Tab2() {
                                   }}
                                   className={`bg-green-500 truncate hover:bg-green-700 text-white font-bold w-[10vw] py-2 px-4 rounded-full}`}
                                 >
-                                  Submit Total Balance
+                                  Submit Reserve Proof
                                 </button>
                               </p>
                             )}

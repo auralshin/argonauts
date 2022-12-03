@@ -32,12 +32,6 @@ function Tab2() {
     signerOrProvider: provider,
   }) as ProofofReserve;
 
-  const usdcContract = new ethers.Contract(
-    "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    usdcABI,
-    provider
-  ) as USDC;
-
   const getAuditors = async () => {
     const auditors = await contract.getAuditors();
     setAuditors(auditors);
@@ -48,13 +42,18 @@ function Tab2() {
     console.log(auditors);
   }, []);
   const getAuditorsChallenges = async () => {
-    console.log(currentEpoch.data);
-    const challenge = await contract.getAuditorsChallenge(
-      currentEpoch.data as any
-    );
+    console.log(currentEpoch.data?.toString(), "xxx");
+    let challengeX
+    try {
+    challengeX = await contract.getAuditorsChallenge(
+        currentEpoch.data?.toString() as any
+      );
+    } catch (e) {
+      console.log(e);
+    }
     let temp: string[] = [];
-
-    challenge.map((c) => {
+    console.log(challengeX, "challenge xxx");
+    challengeX?.map((c) => {
       temp.push(c.toString());
     });
     return temp;
@@ -86,7 +85,7 @@ function Tab2() {
     console.log("signed", sign);
     setSigs([...sigs, sign as string]);
   };
-  const { config } = usePrepareContractWrite({
+  const { config, error } = usePrepareContractWrite({
     address: CONTRACT_ADDRESS,
     abi: ABI,
     functionName: "submitSignature",
@@ -95,6 +94,8 @@ function Tab2() {
 
   const { write } = useContractWrite(config);
   const submitSigs = async () => {
+    console.log(sigs, "sigs xxx");
+    
     write?.();
   };
   return (
@@ -126,13 +127,13 @@ function Tab2() {
                       </tr>
                     </thead>
                     <tbody>
-                      {auditors.map((aud, index) => (
-                        <tr>
+                      {challenges.length ? challenges.map((challenge, index) => (
+                        <tr key={index}>
                           <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             <div className="flex">
                               <div className="ml-3">
                                 <p className="text-gray-600 truncate whitespace-no-wrap">
-                                  {aud
+                                  {auditors[index]
                                     ?.toString()
                                     .split("")
                                     .slice(0, 10)
@@ -147,7 +148,7 @@ function Tab2() {
                           </td>
                           <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                             <p className="text-gray-900 whitespace-no-wrap">
-                              {challenges[index]
+                              {challenge
                                 ?.toString()
                                 .split("")
                                 .slice(0, 10)
@@ -188,7 +189,7 @@ function Tab2() {
                             </button>
                           </td>
                         </tr>
-                      ))}
+                      )) : 'No Challenges Submitted Yet'}
                     </tbody>
 
                     <tfoot>
@@ -203,14 +204,16 @@ function Tab2() {
                           <p className="text-gray-900 font-semibold whitespace-no-wrap"></p>
                         </td>
                         <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                          {sigs.length == auditors.length ? <p className="text-gray-900 whitespace-no-wrap">
-                            <button
-                              onClick={() => submitSigs()}
-                              className={`bg-green-500 truncate hover:bg-green-700 text-white font-bold w-[10vw] py-2 px-4 rounded-full}`}
-                            >
-                              Submit Signature
-                            </button>
-                          </p> : null}
+                          {sigs.length == auditors.length ? (
+                            <p className="text-gray-900 whitespace-no-wrap">
+                              <button
+                                onClick={() => submitSigs()}
+                                className={`bg-green-500 truncate hover:bg-green-700 text-white font-bold w-[10vw] py-2 px-4 rounded-full}`}
+                              >
+                                Submit Signature
+                              </button>
+                            </p>
+                          ) : null}
                         </td>
                       </tr>
                     </tfoot>

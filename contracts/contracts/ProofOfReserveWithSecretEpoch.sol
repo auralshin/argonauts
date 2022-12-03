@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "hardhat/console.sol";
 
-contract ProofofReserve {
+contract ProofOfReserveWithSecretEpoch {
     error InvalidAuditor();
     error InvalidCWA();
     error InvalidNonce();

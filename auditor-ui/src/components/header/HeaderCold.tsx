@@ -10,6 +10,16 @@ function Header() {
   const { currentEpoch } = useEpoch();
   // current Epoch and current Stage
  
+  const stageMap = [
+    "NONCE_COLLECTION", // by auditor
+    "SIGNATURE_SUMISSION", // by cwa
+    "SIGNATURE_VERIFICATION", // by auditor
+    "EPOCH_VERIFIED",
+  ];
+
+  const getStage = (stage = '0') => {
+    return stageMap[parseInt(stage)] || "UNKNOWN";
+  }
 
   const currentStage = useContractRead({
     address: CONTRACT_ADDRESS,
@@ -37,7 +47,7 @@ function Header() {
                 </p>
               </div>
               <div className="bg-white text-black p-2 rounded-2xl shadow-inner shadow-slate-800 font-normal">
-                 <> Current Stage: {currentStage.data?.toString()} </> 
+                 <> Current Stage: {getStage(currentStage.data?.toString())} </> 
               </div>
             </div>
           ) : null}
