@@ -10,9 +10,11 @@ contract ProofOfLiability is AccessControl {
     uint8 public constant VERIFIED_STATE = 1;
     uint8 public constant BALANCE_DISPUTED_STATE = 2;
 
-    mapping(string => bytes32) saltMaps;
+    mapping(string => bytes32) public saltMaps;
     mapping(string => bool) leafValidated;
     mapping(string => uint8) leafStateMaps;
+
+    bool public isContractInitialized;
 
     uint256 public leafSaltMapsLoadedCount;
 
@@ -26,6 +28,8 @@ contract ProofOfLiability is AccessControl {
 
     uint256 public fundsValidated;
     uint256 public leafNodeValidatedCount;
+    uint256 public leafNodeDisputedCount;
+    uint256 public leafNodeStateChangedCount;
 
     bool public openToValidation;
     bool public proofOfLiabilityFinalized;
@@ -37,18 +41,38 @@ contract ProofOfLiability is AccessControl {
 
     event LeafStateUpdated(string hash, uint8 stateUpdatedTo);
 
-    constructor(
-        address exchangeAdmin,
+    constructor(address[] memory exchangeAdmins) public {
+        isContractInitialized = false;
+
+        for (uint256 i = 0; i < exchangeAdmins.length; i++) {
+            _grantRole(EXCHANGE_ADMIN, exchangeAdmins[i]);
+        }
+    }
+
+    function initialize(
         uint256 _totalFundLiabilities,
         uint256 _totalLeafNodes,
         uint256 _totalFundsToBeValidated,
-        uint256 _totalLeafNodesToBeValidated
-    ) public {
+        uint256 _totalLeafNodesToBeValidated,
+        string memory _merkleTreeCid
+    ) public onlyRole(EXCHANGE_ADMIN) {
+        require(!isContractInitialized, "Already initialized.");
+        require(
+            _totalFundsToBeValidated <= _totalFundLiabilities,
+            "Validation requirements cannot be greater than total liabilities"
+        );
+        require(
+            _totalLeafNodesToBeValidated <= _totalLeafNodes,
+            "Validation requirements cannot be greater than total liabilities"
+        );
+
         totalFundLiabilities = _totalFundLiabilities;
         totalFundsToBeValidated = _totalFundsToBeValidated;
         totalLeafNodes = _totalLeafNodes;
         totalLeafNodesToBeValidated = _totalLeafNodesToBeValidated;
-        _grantRole(EXCHANGE_ADMIN, exchangeAdmin);
+
+        merkleTreeCid = _merkleTreeCid;
+        isContractInitialized = true;
     }
 
     function loadSaltMaps(UserSalts[] memory userSalts)
@@ -56,22 +80,35 @@ contract ProofOfLiability is AccessControl {
         onlyRole(EXCHANGE_ADMIN)
     {
         require(
-            leafSaltMapsLoadedCount < totalLeafNodes,
+            leafSaltMapsLoadedCount + userSalts.length <= totalLeafNodes,
             "Defined number of leaf nodes already created."
         );
+
+        for (uint256 i = 0; i < userSalts.length; i++) {
+            require(
+                isNotAlreadyCreated(userSalts[i].hashValue),
+                "Already exists."
+            );
+        }
+
         for (uint256 i = 0; i < userSalts.length; i++) {
             saltMaps[userSalts[i].hashValue] = userSalts[i].saltValue;
+            leafSaltMapsLoadedCount++;
+        }
+
+        if (leafSaltMapsLoadedCount == totalLeafNodes) {
+            openToValidation = true;
         }
     }
 
-    function beginLeafValidation() public onlyRole(EXCHANGE_ADMIN) {
-        require(
-            leafSaltMapsLoadedCount == totalLeafNodes,
-            "Defined number of leaf nodes not yet created."
-        );
+    // function beginLeafValidation() public onlyRole(EXCHANGE_ADMIN) {
+    //     require(
+    //         leafSaltMapsLoadedCount == totalLeafNodes,
+    //         "Defined number of leaf nodes not yet created."
+    //     );
 
-        openToValidation = true;
-    }
+    //     openToValidation = true;
+    // }
 
     function updateUserLeafStates(
         string memory salt,
@@ -97,8 +134,65 @@ contract ProofOfLiability is AccessControl {
 
         leafValidated[hash] = true;
         leafStateMaps[hash] = stateEnum;
-        leafNodeValidatedCount++;
-        fundsValidated += userBalance;
+        leafNodeStateChangedCount++;
+        if (stateEnum == VERIFIED_STATE) {
+            leafNodeValidatedCount++;
+            fundsValidated += userBalance;
+        } else {
+            leafNodeDisputedCount++;
+        }
+    }
+
+    function getIpfsMerkleTreeCid() public view returns (string memory) {
+        return merkleTreeCid;
+    }
+
+    function getFundsValidationState()
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        return (fundsValidated, totalFundsToBeValidated, totalFundLiabilities);
+    }
+
+    function getLeafValidationState()
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        return (
+            leafNodeValidatedCount,
+            totalLeafNodesToBeValidated,
+            totalLeafNodes
+        );
+    }
+
+    function getLeafStateChangesData()
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        return (
+            leafNodeValidatedCount,
+            leafNodeDisputedCount,
+            leafNodeStateChangedCount
+        );
+    }
+
+    function getProofOfLiabilityFinalized() public view returns (bool) {
+        return proofOfLiabilityFinalized;
     }
 
     function finalizeProofOfLiabilities() public onlyRole(EXCHANGE_ADMIN) {
@@ -113,6 +207,14 @@ contract ProofOfLiability is AccessControl {
         );
 
         proofOfLiabilityFinalized = true;
+    }
+
+    function getFinalizedLiabilities() public view returns (uint256) {
+        if (proofOfLiabilityFinalized) {
+            return totalFundLiabilities;
+        } else {
+            return type(uint256).max;
+        }
     }
 
     function isUser(string memory hash, string memory salt)
@@ -149,6 +251,18 @@ contract ProofOfLiability is AccessControl {
             fundsValidated >= totalFundsToBeValidated ||
             leafNodeValidatedCount >= totalLeafNodesToBeValidated
         ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function isNotAlreadyCreated(string memory hash)
+        internal
+        view
+        returns (bool)
+    {
+        if (saltMaps[hash] == bytes32(0)) {
             return true;
         } else {
             return false;
