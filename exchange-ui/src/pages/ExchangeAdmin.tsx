@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from "react";
 import ExchangeAdminSteps from "../components/ExchangeAdminSteps";
 import Header from "../components/Header";

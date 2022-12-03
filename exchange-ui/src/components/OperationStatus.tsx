@@ -1,22 +1,21 @@
-import { operationStatuses } from "../configs/config";
+import { stepStatusKind } from "../services/stepReducer";
 
 function OperationStatus({
   status,
 }: {
-  status: "pending" | "loading" | "success" | "error";
+  status: "PENDING" | "LOADING" | "SUCCESS" | "ERROR";
 }) {
   switch (status) {
-    case operationStatuses.pending:
+    case stepStatusKind.PENDING:
       return <small className="text-stone-500">pending</small>;
-    case operationStatuses.loading:
+    case stepStatusKind.LOADING:
       return <small className="text-amber-500">loading...</small>;
-    case operationStatuses.success:
+    case stepStatusKind.SUCCESS:
       return <small className="text-green-500">success</small>;
-    case operationStatuses.error:
+    case stepStatusKind.ERROR:
       return <small className="text-red-500">error</small>;
-
     default:
-      return <small>error</small>;
+      return <small className="text-red-500">error</small>;
   }
 }
 
