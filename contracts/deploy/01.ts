@@ -1,7 +1,9 @@
-import { Signer } from "ethers";
+import { BigNumber, Signer } from "ethers";
 import { ethers } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+
+import { keccak256, arrayify } from "ethers/lib/utils";
 
 import {
     ProofofReserve,
@@ -16,6 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     let usdcInstance: USDC;
 
     accounts = await hre.ethers.getSigners();
+    const addresses = await Promise.all(accounts.map((s) => s.getAddress()));
 
     console.log(await accounts[0].getAddress());
 
@@ -28,20 +31,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         accounts[0]
     )) as USDC__factory;
 
-    const [startBlock, endBlock] = [1000, 1100];
-
-    const auditors = ["0x58d1D3400cD08E22983cbC2C0AE9AaE13cc5efef"];
-    const cwas = ["0x58d1D3400cD08E22983cbC2C0AE9AaE13cc5efef"];
+    const auditors = addresses.slice(2, 4);
+    const cwas = addresses.slice(4, 6);
 
     usdcInstance = await tokenFactory.deploy();
 
     contractInstance = await protocolFactory.deploy(
         usdcInstance.address,
-        startBlock,
-        endBlock,
+        (
+            await ethers.provider.getBlock("latest")
+        ).number,
         auditors,
         cwas
     );
+
+    console.log(auditors, cwas);
 
     await contractInstance.deployed();
     await usdcInstance.deployed();
@@ -63,6 +67,42 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             usdcInstance.faucet(who, ethers.utils.parseEther("10"))
         )
     );
+
+    console.log("cwa array", await contractInstance.numberOfAuditorsAndCWAs());
+
+    // fill challenges
+    await Promise.all(
+        auditors.map((auditor) =>
+            contractInstance
+                .connect(ethers.provider.getSigner(auditor))
+                .pushChallenge(
+                    ethers.BigNumber.from(ethers.utils.randomBytes(32))
+                )
+        )
+    );
+
+    const currentEpoch = await contractInstance.currentEpoch();
+    // fill signatures
+    for (const cwa of cwas) {
+        const challengesForCWA = await contractInstance.getAuditorsChallenge(
+            currentEpoch
+        );
+        const signed = await Promise.all(
+            challengesForCWA.map((challenge) =>
+                ethers.provider
+                    .getSigner(cwa)
+                    .signMessage("i own this acc" + challenge.toString())
+            )
+        );
+        console.log(signed);
+        await contractInstance
+            .connect(ethers.provider.getSigner(cwa))
+            .submitSignature(signed);
+    }
+
+    // for (const auditor of auditors) {
+
+    // }
 };
 export default func;
 func.id = "nft_token_deploy";
