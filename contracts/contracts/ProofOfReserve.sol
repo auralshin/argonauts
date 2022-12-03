@@ -7,8 +7,9 @@ contract ProofofReserve {
     error InvalidAuditor();
     error InvalidCWA();
     error InvalidNonce();
+    error InvalidRange();
     error ArrayLengthMismatch();
-    error InvalidState(State currentState, State stateRequiredForThisMethod);
+    error InvalidState(State currentState, State stateRequired);
 
     uint256 public currentEpoch;
     uint256 public immutable numberOfAuditorsAndCWAs;
@@ -19,8 +20,8 @@ contract ProofofReserve {
     mapping(address => bool) public auditors;
     address[] public auditorsArray;
 
-    // epoch => cwa => balance
-    mapping(uint256 => mapping(address => uint256)) public cwaBalances;
+    // epoch => abi.encode[startBlockNumber, endBlockNumber]
+    mapping(uint256 => bytes) public epochRange;
 
     enum State {
         NONCE_COLLECTION, // by auditor
@@ -40,23 +41,16 @@ contract ProofofReserve {
 
     constructor(
         address _balanceToken,
+        uint256 startBlockNumber,
+        uint256 endBlockNumber,
         address[] memory _auditors,
         address[] memory _cwas
     ) {
-        currentEpoch = block.number;
+        currentEpoch = 1;
+        epochRange[currentEpoch] = abi.encode(startBlockNumber, endBlockNumber);
         balanceToken = IERC20(_balanceToken);
         uint256 len = _auditors.length;
         if (len != _cwas.length) revert ArrayLengthMismatch();
-
-        for (uint256 i; i < len; ) {
-            auditors[_auditors[i]] = true;
-            address cwa = _cwas[i];
-            cwas[cwa] = true;
-            cwaBalances[currentEpoch][cwa] = balanceToken.balanceOf(cwa);
-            unchecked {
-                ++i;
-            }
-        }
 
         auditorsArray = _auditors;
         cwasArray = _cwas;
@@ -64,13 +58,14 @@ contract ProofofReserve {
         numberOfAuditorsAndCWAs = len;
     }
 
+    // nonce => used
     mapping(uint256 => bool) public nonceUsed;
 
     // epoch => currentStateCount
     mapping(uint256 => uint256) public stateCount;
 
-    // epoch => auditor => nonce
-    mapping(uint256 => mapping(address => uint256)) public auditorNonces;
+    // epoch => auditor => abi.encode(nonce, blocknumber)
+    mapping(uint256 => mapping(address => bytes)) public auditorChallenge;
 
     // epoch => cwa => signatures
     mapping(uint256 => mapping(address => bytes32[])) public cwaSignatures;
@@ -90,23 +85,28 @@ contract ProofofReserve {
     }
 
     function updateEpoch() external {
-        currentEpoch = block.number;
-        uint256 len = numberOfAuditorsAndCWAs;
-        for (uint256 i; i < len; ) {
-            cwaBalances[currentEpoch][cwasArray[i]] = balanceToken.balanceOf(
-                cwasArray[i]
-            );
-            unchecked {
-                ++i;
-            }
-        }
+        // ! TODO
     }
 
-    function validateNonce(uint256 _nonce) external onlyAuditor {
+    function pushChallenge(uint256 _nonce, uint256 _blockNumber)
+        external
+        onlyAuditor
+    {
+        // ! restrict state
+
         if (nonceUsed[_nonce]) revert InvalidNonce();
 
+        (uint256 start, uint256 end) = abi.decode(
+            epochRange[currentEpoch],
+            (uint256, uint256)
+        );
+        if (_blockNumber < start || _blockNumber > end) revert InvalidRange();
+
         nonceUsed[_nonce] = true;
-        auditorNonces[currentEpoch][msg.sender] = _nonce;
+        auditorChallenge[currentEpoch][msg.sender] = abi.encode(
+            _nonce,
+            _blockNumber
+        );
 
         stateCount[currentEpoch]++;
     }
@@ -114,6 +114,8 @@ contract ProofofReserve {
     // only submit signatures once?
     // verify signatures?
     function submitSignature(bytes32[] calldata _sigs) external onlyCWA {
+        // ! restrict state
+
         uint256 len = _sigs.length;
         if (len != numberOfAuditorsAndCWAs) revert ArrayLengthMismatch();
         for (uint256 i; i < len; ) {
@@ -126,29 +128,57 @@ contract ProofofReserve {
         stateCount[currentEpoch]++;
     }
 
-    function getAuditorNonces(uint256 _epoch, address[] calldata _auditors)
-        external
-        view
-        returns (uint256[] memory)
-    {
-        uint256 len = _auditors.length;
-        uint256[] memory nonces = new uint256[](len);
+    function verify(bool[] calldata _votes) external onlyAuditor {
+        uint256 len = numberOfAuditorsAndCWAs;
+        if (_votes.length != len) revert ArrayLengthMismatch();
         for (uint256 i; i < len; ) {
-            if (!auditors[_auditors[i]]) revert InvalidAuditor();
-            nonces[i] = auditorNonces[_epoch][_auditors[i]];
+            // votes[currentEpoch][]
+
             unchecked {
                 ++i;
             }
         }
-        return nonces;
     }
 
-    function getSignaures(uint256 _epoch, address[] calldata _cwas)
+    function getAuditorChallenge(address _auditor, uint256 _epoch)
+        external
+        view
+        returns (uint256 nonce, uint256 blockNumber)
+    {
+        if (!auditors[_auditor]) revert InvalidAuditor();
+        (nonce, blockNumber) = abi.decode(
+            auditorChallenge[_epoch][_auditor],
+            (uint256, uint256)
+        );
+    }
+
+    function getAuditorsChallenge(uint256 _epoch)
+        external
+        view
+        returns (uint256[] memory nonces, uint256[] memory blocks)
+    {
+        uint256 len = numberOfAuditorsAndCWAs;
+        nonces = new uint256[](len);
+        blocks = new uint256[](len);
+
+        for (uint256 i; i < len; ) {
+            address auditor = auditorsArray[i];
+            (nonces[i], blocks[i]) = abi.decode(
+                auditorChallenge[_epoch][auditor],
+                (uint256, uint256)
+            );
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function getSignaures(uint256 _epoch)
         external
         view
         returns (bytes32[][] memory)
     {
-        uint256 len = _cwas.length;
+        uint256 len = cwasArray.length;
         if (len != numberOfAuditorsAndCWAs) revert ArrayLengthMismatch();
 
         bytes32[][] memory sigs = new bytes32[][](len);
@@ -157,7 +187,7 @@ contract ProofofReserve {
             bytes32[] memory auditorSigs = new bytes32[](len);
 
             for (uint256 j; j < len; ) {
-                auditorSigs[j] = cwaSignatures[_epoch][_cwas[i]][j];
+                auditorSigs[j] = cwaSignatures[_epoch][cwasArray[i]][j];
                 unchecked {
                     ++j;
                 }
