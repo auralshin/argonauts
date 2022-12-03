@@ -10,11 +10,6 @@ import "dotenv/config";
 import "hardhat-deploy";
 import "solidity-coverage";
 
-import "./tasks/accounts";
-import "./tasks/balance";
-import "./tasks/block-number";
-import "./tasks/create-collectibles";
-
 const MAINNET_RPC_URL =
     process.env.MAINNET_RPC_URL ||
     process.env.ALCHEMY_MAINNET_RPC_URL ||
@@ -83,7 +78,7 @@ module.exports = {
     solidity: {
         compilers: [
             {
-                version: "0.8.4",
+                version: "0.8.17",
             },
         ],
     },
