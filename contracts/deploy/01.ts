@@ -68,6 +68,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         )
     );
 
+    console.log("cwa array", await contractInstance.numberOfAuditorsAndCWAs());
+
     // fill challenges
     await Promise.all(
         auditors.map((auditor) =>
@@ -97,6 +99,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             .connect(ethers.provider.getSigner(cwa))
             .submitSignature(signed);
     }
+
+    // for (const auditor of auditors) {
+
+    // }
 };
 export default func;
 func.id = "nft_token_deploy";

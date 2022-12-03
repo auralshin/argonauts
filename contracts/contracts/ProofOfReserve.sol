@@ -28,6 +28,14 @@ contract ProofofReserve {
         EPOCH_VERIFIED
     }
 
+    function getCWAs() external view returns (address[] memory) {
+        return cwasArray;
+    }
+
+    function getAuditors() external view returns (address[] memory) {
+        return auditorsArray;
+    }
+
     function getState(uint256 epoch) public view returns (State) {
         uint256 count = stateCount[epoch];
         if (count >= 3 * numberOfAuditorsAndCWAs) return State.EPOCH_VERIFIED;
