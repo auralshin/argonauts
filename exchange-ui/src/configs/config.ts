@@ -3,6 +3,7 @@ export const clientTypes = {
   exchangeAdmin: "Exchange Admin",
   exchangeUser: "Exchange User",
   public: "Public",
+  main: "Main",
 };
 
 export const routes = {
@@ -13,10 +14,3 @@ export const routes = {
 };
 
 export const tableBorderClass = "border-2 border-stone-900 p-1 px-2";
-
-export const operationStatuses = {
-  pending: "pending",
-  loading: "loading",
-  success: "success",
-  error: "error",
-};
