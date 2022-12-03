@@ -16,6 +16,8 @@ contract ProofofReserve {
     uint256 public immutable numberOfAuditorsAndCWAs;
     IERC20 public immutable balanceToken;
 
+    mapping(uint256 => uint256) private epochToBlocknumber;
+
     mapping(address => bool) public cwas;
     address[] public cwasArray;
     mapping(address => bool) public auditors;
@@ -25,8 +27,7 @@ contract ProofofReserve {
         NONCE_COLLECTION, // by auditor
         SIGNATURE_SUMISSION, // by cwa
         SIGNATURE_VERIFICATION, // by auditor
-        EPOCH_VERIFIED,
-        EPOCH_VERIFICATION_FAILED
+        EPOCH_VERIFIED
     }
 
     function getCWAs() external view returns (address[] memory) {
@@ -39,8 +40,6 @@ contract ProofofReserve {
 
     function getState(uint256 epoch) public view returns (State) {
         uint256 count = stateCount[epoch];
-        if (count >= 4 * numberOfAuditorsAndCWAs)
-            return State.EPOCH_VERIFICATION_FAILED;
         if (count >= 3 * numberOfAuditorsAndCWAs) return State.EPOCH_VERIFIED;
         if (count >= 2 * numberOfAuditorsAndCWAs)
             return State.SIGNATURE_VERIFICATION;
@@ -50,11 +49,12 @@ contract ProofofReserve {
 
     constructor(
         address _balanceToken,
-        uint256 _epoch,
+        uint256 proposedBlocknumber,
         address[] memory _auditors,
         address[] memory _cwas
     ) {
-        currentEpoch = _epoch;
+        currentEpoch = 1;
+        epochToBlocknumber[currentEpoch] = proposedBlocknumber;
         balanceToken = IERC20(_balanceToken);
         uint256 len = _auditors.length;
         if (len != _cwas.length) revert ArrayLengthMismatch();
@@ -78,9 +78,6 @@ contract ProofofReserve {
 
     // epoch => currentStateCount
     mapping(uint256 => uint256) public stateCount;
-
-    // epoch => totalReserve
-    mapping(uint256 => uint256) public totalReserve;
 
     // epoch => auditor => abi.encode(nonce)
     mapping(uint256 => mapping(address => bytes)) public auditorChallenge;
@@ -140,22 +137,7 @@ contract ProofofReserve {
 
         totalBalances[currentEpoch][msg.sender] = totalBalance;
 
-        if (++stateCount[currentEpoch] >= 3 * numberOfAuditorsAndCWAs)
-            _validateState();
-    }
-
-    function _validateState() internal {
-        uint256 len = numberOfAuditorsAndCWAs;
-        uint256 i;
-        uint256 totalBalanceRef = totalBalances[currentEpoch][auditorsArray[i]];
-        for (i = 1; i < len; ) {
-            uint256 curBalance = totalBalances[currentEpoch][auditorsArray[i]];
-            if (curBalance != totalBalanceRef) stateCount[currentEpoch] += len;
-            unchecked {
-                ++i;
-            }
-        }
-        totalReserve[currentEpoch] = totalBalanceRef;
+        stateCount[currentEpoch]++;
     }
 
     function hasAuditorSubmittedBalance(address _auditor, uint256 _epoch)
