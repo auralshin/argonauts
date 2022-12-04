@@ -1,9 +1,19 @@
-import React, { useState } from "react";
-import { GreenButton, RedButton } from "./Button";
+import React, { useEffect, useState } from "react";
+import { Button, GreenButton, RedButton } from "./Button";
 import UserBalanceTable from "./UserBalanceTable";
 
 function UserLiability() {
   const [secret, setSecret] = useState<string | null>(null);
+  useEffect(() => {
+    // fetch the tree and hashmap from IPFS
+    // pick a random user
+    // display details
+  }, []);
+
+  const validateTree = () => {
+    // validate tree received from IPFS
+  };
+
   return (
     <section className="flex justify-center h-[100vh] w-[100vw] text-stone-900">
       <div className="flex flex-col gap-4 items-start border-stone-900 border-2 rounded-xl h-max mt-10 p-8">
@@ -15,6 +25,7 @@ function UserLiability() {
           </p>
         </div>
         <UserBalanceTable />
+        <Button handleClick={() => {}}>Validate</Button>
         <input
           type="text"
           placeholder="Enter secret code"
