@@ -3,6 +3,7 @@ import { web3StorageKey } from "../configs/config";
 import { IndexHashMap, TreeNode } from "./types/types";
 
 function makeStorageClient() {
+  console.log({ web3StorageKey });
   return new Web3Storage({ token: web3StorageKey });
 }
 
@@ -53,6 +54,7 @@ export default async function publishMerkleTree(
 ) {
   try {
     const files = makeFileObjects({ tree, hashMap: saltAndHashMap });
+    console.log({ tree, hashMap: saltAndHashMap, files });
     const cidString = await storeWithProgress(files);
     console.log(`CID of the tree is ${cidString}`);
     return { cidString };

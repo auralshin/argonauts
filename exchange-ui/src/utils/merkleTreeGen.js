@@ -55,15 +55,16 @@ function saltAndHashMapping(userData) {
   const saltAndHashMap = [];
   for (let i = 0; i < userData.length; i++) {
     const data = userData[i];
+
     const userLeaf = userDataToLeaf({
       balance: data.balance,
       salt: data.salt,
       uuid: data.uuid,
     });
-    saltAndHashMap.push({
-      hash: userLeaf.hash,
-      salt: data.salt,
-    });
+
+    const nestedSaltAndHash = [userLeaf.hash, data.salt];
+
+    saltAndHashMap.push(nestedSaltAndHash);
   }
   return saltAndHashMap;
 }
