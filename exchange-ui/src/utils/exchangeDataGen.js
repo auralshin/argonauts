@@ -4,7 +4,7 @@ import { soliditySha3 } from "web3-utils";
 function exchangeDataGen(userData) {
   const userDataWithSalt = [];
   const userDataWithUnHashedSalt = [];
-  for (let i = 0; i < userData.length; i++) {
+  for (let i = 0; i < 10; i++) {
     const saltToUser = crypto.randomBytes(4).toString("hex");
     const saltInDB = soliditySha3({
       type: "string",

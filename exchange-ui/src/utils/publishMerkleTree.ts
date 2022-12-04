@@ -3,7 +3,6 @@ import { web3StorageKey } from "../configs/config";
 import { IndexHashMap, TreeNode } from "./types/types";
 
 function makeStorageClient() {
-  console.log({ web3StorageKey });
   return new Web3Storage({ token: web3StorageKey });
 }
 
@@ -48,7 +47,7 @@ async function storeWithProgress(files: File[]) {
   }
 }
 
-export default async function publishMerkleTree(
+export async function publishMerkleTree(
   tree: TreeNode[],
   saltAndHashMap: IndexHashMap[]
 ) {
@@ -61,5 +60,31 @@ export default async function publishMerkleTree(
   } catch (error: any) {
     console.error(error);
     return { cidString: null };
+  }
+}
+
+export async function retrieveFiles(cid: string) {
+  const client = makeStorageClient();
+  const res = await client.get(cid);
+  console.log(`Got a response! [${res?.status}] ${res?.statusText}`);
+  if (!res?.ok) {
+    throw new Error(
+      `failed to get ${cid} - [${res?.status}] ${res?.statusText}`
+    );
+  }
+
+  // unpack File objects from the response
+  const files = await res?.files();
+
+  if (files[0].name === "tree.json") {
+    const treeRes = await client.get(files[0].cid);
+
+    const rawStringData = await treeRes?.text();
+    const regex = /({"tree")/g;
+    const rawData = rawStringData?.search(regex);
+    const slicedString = rawStringData?.slice(rawData) || "";
+    const jsonData = JSON.parse(slicedString);
+
+    return jsonData;
   }
 }
