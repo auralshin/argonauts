@@ -2,51 +2,51 @@
     {
         "uuid": "5512bf2be9",
         "balance": 745,
-        "salt": "fe6f0b05"
+        "salt": "503623ad"
     },
     {
         "uuid": "8008f9b1e8",
         "balance": 109,
-        "salt": "8f956e20"
+        "salt": "f650c2d0"
     },
     {
         "uuid": "783dfdd9d3",
         "balance": 92,
-        "salt": "5bab30d0"
+        "salt": "c72afea1"
     },
     {
         "uuid": "b8962c7b37",
         "balance": 221,
-        "salt": "6fecebe3"
+        "salt": "1d96e2b2"
     },
     {
         "uuid": "253a3aa050",
         "balance": 539,
-        "salt": "4fb494f6"
+        "salt": "742d01a2"
     },
     {
         "uuid": "303f03de9d",
         "balance": 495,
-        "salt": "4bd7c38e"
+        "salt": "ac0fe010"
     },
     {
         "uuid": "52125eda63",
         "balance": 21,
-        "salt": "264dac04"
+        "salt": "ab654d4e"
     },
     {
         "uuid": "94b64e62f3",
         "balance": 334,
-        "salt": "13473e37"
+        "salt": "14479df4"
     },
     {
         "uuid": "ada57084ee",
         "balance": 82,
-        "salt": "b16d8506"
+        "salt": "06673bac"
     },
     {
         "uuid": "63ec80ca5f",
         "balance": 552,
-        "salt": "08d0d5a9"
+        "salt": "1b984ee1"
     }
 ]

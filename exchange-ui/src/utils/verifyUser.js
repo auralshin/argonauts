@@ -70,7 +70,7 @@ function hashed(x) {
   return crypto.createHash("sha256").update(x).digest("base64");
 }
 
-function userDataToLeaf(user, saltInDB) {
+export function userDataToLeaf(user, saltInDB) {
   console.log({ hash: hashed(saltInDB + user.uuid) });
   return { hash: hashed(saltInDB + user.uuid), balance: user.balance };
 }

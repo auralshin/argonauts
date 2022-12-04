@@ -3,8 +3,9 @@ import { retrieveFiles } from "../utils/publishMerkleTree";
 import { Button, GreenButton, RedButton } from "./Button";
 import UserBalanceTable from "./UserBalanceTable";
 import userData from "../configs/userData.json";
-import verifyUser from "../utils/verifyUser";
+import verifyUser, { userDataToLeaf } from "../utils/verifyUser";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 function UserLiability() {
   const [secret, setSecret] = useState<string | null>(null);
@@ -70,7 +71,23 @@ function UserLiability() {
           Validate
         </Button>
         <div className="flex gap-5">
-          <GreenButton handleClick={() => {}} isDisabled={false}>
+          <GreenButton handleClick={async () => {
+
+            // get hash from tree and salt from user
+            const hash = userDataToLeaf(randomUser,secret ).hash;
+            const {data} =  await axios.post("http://localhost:1357/get-jwt", {
+              hash,
+              salt: secret
+            });
+            const res = await axios.post("http://localhost:1357/user-state", {
+              balance: randomUser.balance,
+              stateEnum: 1
+            },{headers: {"Authorization": "Bearer" + data}});
+
+            toast("State Confirmed!")
+            
+            // post call to user-state 
+          }} isDisabled={false}>
             Confirm
           </GreenButton>
           <RedButton handleClick={() => {}} isDisabled={false}>
