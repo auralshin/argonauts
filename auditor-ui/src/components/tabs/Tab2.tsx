@@ -84,7 +84,7 @@ function Tab2() {
     write?.();
   };
   const usdcContract = new ethers.Contract(
-    "0x4E499be57DAAB760275a8931DDF5473c867D8AB0",
+    "0xa122c863f32B7a3b0cA3779C2CF3e6aE2264c1A4",
     usdcABI,
     provider
   ) as USDC;

@@ -29,7 +29,7 @@ function Header() {
     abi: ABI,
     functionName: "getState",
     args: [currentEpoch.data],
-    staleTime: 2_000,
+    staleTime: 1_000,
     onSuccess(data) {
       console.log("Success", data);
     },
@@ -56,10 +56,8 @@ function Header() {
   useEffect(() => {
     
     const run = async () => {
-      console.log(currentEpoch.data)
       if(!currentEpoch.data) return
       const totalReserve = await contract.totalReserve(currentEpoch.data as unknown as number)
-      console.log('hello', totalReserve)
       setTotalReserve(totalReserve)
     }
     run()

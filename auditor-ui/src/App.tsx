@@ -12,12 +12,6 @@ function App() {
 
   // initilise contract call is nonce use
 
-
-  const getRange = () => {
-    const range = ethers.BigNumber.from(ethers.utils.randomBytes(32))
-    return range;
-  }
-
   const Main = () => {
     return (
       <div className="h-[100vh]">

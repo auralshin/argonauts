@@ -101,8 +101,8 @@ contract ProofofReserve {
         _;
     }
 
-    function updateEpoch() external {
-        // ! TODO
+    function updateEpoch(uint256 _epoch) external onlyAuditor{
+        currentEpoch = _epoch;
     }
 
     function pushChallenge(uint256 _nonce) external onlyAuditor {

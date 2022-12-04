@@ -11,8 +11,8 @@ import { infuraProvider } from "wagmi/providers/infura";
 import { publicProvider } from "wagmi/providers/public";
 import GlobalContextProvider, { useGlobalContext } from "./context/index";
 const { chains, provider } = configureChains(
-  [chain.hardhat],
-  [infuraProvider({ apiKey: process.env.REACT_INFURA || "" }), publicProvider()]
+  [chain.goerli],
+  [infuraProvider({ apiKey: process.env.REACT_APP_INFURA || "" }), publicProvider()]
 );
 
 const { connectors } = getDefaultWallets({
