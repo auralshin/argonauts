@@ -1,7 +1,7 @@
 import crypto from "crypto-browserify";
 import { soliditySha3 } from "web3-utils";
 
-export default function userDataVerification(
+export default function verifyUser(
   tree,
   hashMap,
   userData,
@@ -32,8 +32,8 @@ export default function userDataVerification(
 
   console.log({ selectedUserIndexInTree });
 
-  if (!selectedUserIndexInTree) {
-    return false;
+  if (!selectedUserIndexInTree || selectedUserData === undefined) {
+    return { proofResults: false, sisterNodes: [] };
   }
 
   console.log(`selectedUserIndexInTree: ${selectedUserIndexInTree}`);
@@ -51,7 +51,7 @@ export default function userDataVerification(
   );
 
   console.log(`Verification Proof: ${proofResults}`);
-  return proofResults;
+  return { proofResults, sisterNodes: gProof };
 }
 
 function log2(n) {

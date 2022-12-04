@@ -30,6 +30,7 @@ function UserLiability() {
   }, []);
   const randomUserNumber = 9;
   const randomUser = userData[randomUserNumber];
+  const [{proofResults, sisterNodes}, setValidationData] = useState<{proofResults: boolean, sisterNodes: any[]}>({proofResults: false, sisterNodes: []});
 
   const validateTree = () => {
     // validate tree received from IPFS
@@ -40,9 +41,13 @@ function UserLiability() {
       randomUserNumber,
       secret
     );
-    isTreeValidated
+
+    console.log({isTreeValidated})
+    isTreeValidated.proofResults
       ? toast("User salt validated in the tree")
       : toast("User salt validation failed!");
+    
+    return isTreeValidated;
   };
 
   return (
@@ -65,7 +70,9 @@ function UserLiability() {
         />
         <Button
           handleClick={() => {
-            validateTree();
+            const res = validateTree();
+            console.log(res.sisterNodes);
+            setValidationData({proofResults: res.proofResults, sisterNodes: res.sisterNodes});
           }}
         >
           Validate
@@ -94,6 +101,19 @@ function UserLiability() {
             Challenge
           </RedButton>
         </div>
+        {
+          proofResults? <div>
+          <h3 className="font-bold">Displaying all the sister nodes & branches validated</h3>
+          <ul className="font-mono">
+            {
+              // sisterNodes.map((c) => console.log())
+              sisterNodes.map((v, i) => <li key={i}> {v.hash} - {v.balance}</li>)
+            }
+            {/* <li> {retrievedMerkleData?.tree?[1]?.hash?} - {}</li> */}
+          </ul>
+        </div> : null
+        }
+        
       </div>
     </section>
   );
