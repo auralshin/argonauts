@@ -14,6 +14,7 @@ function exchangeDataGen() {
 			type: "string",
 			value: saltToUser,
 		});
+		// const saltInDB = ethers.utils.id(saltToUser);
 		userDataWithSalt.push({
 			uuid: userData[i].uuid,
 			balance: userData[i].balance,

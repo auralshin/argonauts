@@ -1,0 +1,45 @@
+{
+    "abi": [
+        {
+            "inputs": [
+                {
+                    "internalType": "string",
+                    "name": "salt",
+                    "type": "string"
+                },
+                {
+                    "internalType": "string",
+                    "name": "hash",
+                    "type": "string"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "userBalance",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "stateEnum",
+                    "type": "uint8"
+                }
+            ],
+            "name": "updateUserLeafStates",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getIpfsMerkleTreeCid",
+            "outputs": [
+                {
+                    "internalType": "string",
+                    "name": "",
+                    "type": "string"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        }
+    ]
+}
