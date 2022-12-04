@@ -6,7 +6,7 @@ import UserDataModal from "./UserDataModal";
 import users from "../configs/userData.json";
 import exchangeDataGen from "../utils/exchangeDataGen";
 import MerkleModal from "./MerkleModal";
-import publishMerkleTree from "../utils/publishMerkleTree";
+import {publishMerkleTree, retrieveFiles} from "../utils/publishMerkleTree";
 import { toast } from "react-toastify";
 import { useContractWrite, usePrepareContractWrite } from "wagmi";
 import proofOfLiabilityAbi from "../configs/abi/proofOfLiability.json";
@@ -31,6 +31,8 @@ function ExchangeAdminSteps() {
     userDataWithSalt: [],
     userDataWithUnHashedSalt: [],
   });
+
+  console.log({userDataState})
 
   const [merkleState, setMerkleState] = useState({
     isMerkleModalOpen: false,
@@ -171,6 +173,8 @@ function ExchangeAdminSteps() {
             merkleState.tree,
             merkleState.hashMap
           );
+          
+          
           // step 3 set state
           setCidString(publishedData.cidString);
           // step 4 success, stepCount and toast

@@ -1,14 +1,40 @@
 import crypto from "crypto-browserify";
+import { soliditySha3 } from "web3-utils";
 
 export default function userDataVerification(
   tree,
   hashMap,
   userData,
-  selectedUserIndexInData
+  selectedUserIndexInData,
+  salt
 ) {
+  const saltInDB = soliditySha3({
+    type: "string",
+    value: salt,
+  });
+
+  console.log({ tree });
+  console.log({ hashMap });
+  console.log({ userData });
+  console.log({ selectedUserIndexInData });
+  console.log({ salt });
+
   const selectedUserData = userData[selectedUserIndexInData];
-  const selectedUserTreeNode = userDataToLeaf(selectedUserData);
-  const selectedUserIndexInTree = hashMap[selectedUserTreeNode.has];
+  console.log({ selectedUserData });
+  const selectedUserTreeNode = userDataToLeaf(selectedUserData, saltInDB);
+  console.log({ hash: selectedUserTreeNode.hash });
+
+  console.log({ hashMapVal: hashMap });
+
+  const suit = hashMap.findIndex((v) => v.hash === selectedUserTreeNode.hash);
+
+  const selectedUserIndexInTree = hashMap[suit].index;
+
+  console.log({ selectedUserIndexInTree });
+
+  if (!selectedUserIndexInTree) {
+    return false;
+  }
 
   console.log(`selectedUserIndexInTree: ${selectedUserIndexInTree}`);
   console.log(`selectedUserIndexInData: ${selectedUserIndexInData}`);
@@ -17,9 +43,9 @@ export default function userDataVerification(
   console.log("gProof: ", gProof);
 
   const proofResults = verifyProof(
-    selectedUserIndexInTree,
+    selectedUserTreeNode,
     selectedUserIndexInData,
-    userData.length,
+    10,
     tree[1],
     gProof
   );
@@ -44,11 +70,14 @@ function hashed(x) {
   return crypto.createHash("sha256").update(x).digest("base64");
 }
 
-function userDataToLeaf(user) {
-  return { hash: hashed(user.salt + user.uuid), balance: user.balance };
+function userDataToLeaf(user, saltInDB) {
+  console.log({ hash: hashed(saltInDB + user.uuid) });
+  return { hash: hashed(saltInDB + user.uuid), balance: user.balance };
 }
 
 function combineTreeNodes(l, r) {
+  console.log({ l });
+  console.log({ r });
   if (l.balance >= 0 && r.balance >= 0) {
     const newNodeHash = hashed(
       l.hash + l.balance.toString(32) + r.hash + r.balance.toString(32)

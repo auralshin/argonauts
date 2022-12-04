@@ -1,17 +1,47 @@
 import React, { useEffect, useState } from "react";
+import { retrieveFiles } from "../utils/publishMerkleTree";
 import { Button, GreenButton, RedButton } from "./Button";
 import UserBalanceTable from "./UserBalanceTable";
+import userData from "../configs/userData.json";
+import verifyUser from "../utils/verifyUser";
+import { toast } from "react-toastify";
 
 function UserLiability() {
   const [secret, setSecret] = useState<string | null>(null);
+  const [retrievedMerkleData, setRetrievedMerkleData] = useState({
+    tree: null,
+    hashMap: null,
+  });
   useEffect(() => {
     // fetch the tree and hashmap from IPFS
+    const cid = "bafybeibzxh4ypef2dujcskkmj53chpvthldx7vodptt3ja2a6uoxgjti3u";
+    (async () => {
+      const jsonData = await retrieveFiles(cid);
+
+      setRetrievedMerkleData({
+        tree: jsonData.tree,
+        hashMap: jsonData.hashMap,
+      });
+    })();
+
     // pick a random user
     // display details
   }, []);
+  const randomUserNumber = 9;
+  const randomUser = userData[randomUserNumber];
 
   const validateTree = () => {
     // validate tree received from IPFS
+    const isTreeValidated = verifyUser(
+      retrievedMerkleData.tree,
+      retrievedMerkleData.hashMap,
+      userData,
+      randomUserNumber,
+      secret
+    );
+    isTreeValidated
+      ? toast("User salt validated in the tree")
+      : toast("User salt validation failed!");
   };
 
   return (
@@ -21,17 +51,24 @@ function UserLiability() {
         <div className="flex flex-col gap-1 items-start">
           <h2 className="font-bold">User ID hash</h2>
           <p>
-            <i>abcxyz</i>
+            <i>{randomUser.uuid}</i>
           </p>
         </div>
-        <UserBalanceTable />
-        <Button handleClick={() => {}}>Validate</Button>
+        <UserBalanceTable userBalances={[randomUser.balance]} />
+
         <input
           type="text"
           placeholder="Enter secret code"
           className="py-1 px-2 rounded-xl"
           onChange={(e) => setSecret(e.target.value)}
         />
+        <Button
+          handleClick={() => {
+            validateTree();
+          }}
+        >
+          Validate
+        </Button>
         <div className="flex gap-5">
           <GreenButton handleClick={() => {}} isDisabled={false}>
             Confirm
