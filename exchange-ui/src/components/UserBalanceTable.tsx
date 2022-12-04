@@ -1,10 +1,7 @@
 import { tableBorderClass } from "../configs/config";
 
-function UserBalanceTable() {
-  const userBalances = [
-    { assetName: "BTC", totalBalance: "0.012" },
-    { assetName: "ETH", totalBalance: "1.517" },
-  ];
+function UserBalanceTable({userBalances}: any) {
+
 
   return (
     <table className="text-left">
@@ -15,11 +12,11 @@ function UserBalanceTable() {
         </tr>
       </thead>
       <tbody>
-        {userBalances.map(({ assetName, totalBalance }) => (
+        {userBalances.map(( balance: any) => (
           <tr>
-            <td className={tableBorderClass}>{assetName}</td>
+            <td className={tableBorderClass}>{"asset 1"}</td>
             <td className={tableBorderClass}>
-              <i>{totalBalance}</i>
+              <i>{balance}</i>
             </td>
           </tr>
         ))}

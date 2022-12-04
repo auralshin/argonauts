@@ -1,14 +1,28 @@
 import crypto from "crypto-browserify";
+import { soliditySha3 } from "web3-utils";
 
 export default function userDataVerification(
   tree,
   hashMap,
   userData,
-  selectedUserIndexInData
+  selectedUserIndexInData,
+  salt
 ) {
+  const saltInDB = soliditySha3({
+    type: "string",
+    value: salt,
+  });
+
   const selectedUserData = userData[selectedUserIndexInData];
-  const selectedUserTreeNode = userDataToLeaf(selectedUserData);
-  const selectedUserIndexInTree = hashMap[selectedUserTreeNode.has];
+  console.log({ selectedUserData });
+  const selectedUserTreeNode = userDataToLeaf(selectedUserData, saltInDB);
+  const selectedUserIndexInTree = hashMap[selectedUserTreeNode.hash];
+
+  if (!selectedUserIndexInTree) {
+    return false;
+  }
+
+  console.log({ selectedUserTreeNode });
 
   console.log(`selectedUserIndexInTree: ${selectedUserIndexInTree}`);
   console.log(`selectedUserIndexInData: ${selectedUserIndexInData}`);
@@ -44,8 +58,8 @@ function hashed(x) {
   return crypto.createHash("sha256").update(x).digest("base64");
 }
 
-function userDataToLeaf(user) {
-  return { hash: hashed(user.salt + user.uuid), balance: user.balance };
+function userDataToLeaf(user, saltInDB) {
+  return { hash: hashed(saltInDB + user.uuid), balance: user.balance };
 }
 
 function combineTreeNodes(l, r) {
