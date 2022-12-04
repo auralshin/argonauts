@@ -13,16 +13,28 @@ export default function userDataVerification(
     value: salt,
   });
 
+  console.log({ tree });
+  console.log({ hashMap });
+  console.log({ userData });
+  console.log({ selectedUserIndexInData });
+  console.log({ salt });
+
   const selectedUserData = userData[selectedUserIndexInData];
   console.log({ selectedUserData });
   const selectedUserTreeNode = userDataToLeaf(selectedUserData, saltInDB);
-  const selectedUserIndexInTree = hashMap[selectedUserTreeNode.hash];
+  console.log({ hash: selectedUserTreeNode.hash });
+
+  console.log({ hashMapVal: hashMap });
+
+  const suit = hashMap.findIndex((v) => v.hash === selectedUserTreeNode.hash);
+
+  const selectedUserIndexInTree = hashMap[suit].index;
+
+  console.log({ selectedUserIndexInTree });
 
   if (!selectedUserIndexInTree) {
     return false;
   }
-
-  console.log({ selectedUserTreeNode });
 
   console.log(`selectedUserIndexInTree: ${selectedUserIndexInTree}`);
   console.log(`selectedUserIndexInData: ${selectedUserIndexInData}`);
@@ -31,9 +43,9 @@ export default function userDataVerification(
   console.log("gProof: ", gProof);
 
   const proofResults = verifyProof(
-    selectedUserIndexInTree,
+    selectedUserTreeNode,
     selectedUserIndexInData,
-    userData.length,
+    10,
     tree[1],
     gProof
   );
@@ -59,10 +71,13 @@ function hashed(x) {
 }
 
 function userDataToLeaf(user, saltInDB) {
+  console.log({ hash: hashed(saltInDB + user.uuid) });
   return { hash: hashed(saltInDB + user.uuid), balance: user.balance };
 }
 
 function combineTreeNodes(l, r) {
+  console.log({ l });
+  console.log({ r });
   if (l.balance >= 0 && r.balance >= 0) {
     const newNodeHash = hashed(
       l.hash + l.balance.toString(32) + r.hash + r.balance.toString(32)

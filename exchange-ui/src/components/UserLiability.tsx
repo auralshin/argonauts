@@ -11,7 +11,7 @@ function UserLiability() {
   const [retrievedMerkleData, setRetrievedMerkleData] = useState({tree: null, hashMap: null});
   useEffect(() => {
     // fetch the tree and hashmap from IPFS
-    const cid = "bafybeid5mwci3fyzwtw37gppip3pz45iaq6zcdio6bocceqplycp3a5e3q";
+    const cid = "bafybeibzxh4ypef2dujcskkmj53chpvthldx7vodptt3ja2a6uoxgjti3u";
     (async () => {
       const jsonData = await retrieveFiles(cid);
 
